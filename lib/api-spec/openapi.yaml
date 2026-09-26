@@ -10,6 +10,10 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: analyses
+    description: AI-powered project review operations
+  - name: dashboard
+    description: Overview metrics for the review workspace
 paths:
   /healthz:
     get:
@@ -24,6 +28,83 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get review workspace summary
+      description: Returns high-level metrics and recent project analyses.
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+  /analyses:
+    get:
+      operationId: listAnalyses
+      tags: [analyses]
+      summary: List project analyses
+      description: Returns recent project analyses ordered by creation time.
+      responses:
+        "200":
+          description: Project analyses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AnalysisListItem"
+    post:
+      operationId: createAnalysis
+      tags: [analyses]
+      summary: Analyze a project snapshot
+      description: Sends a project snapshot to the AI reviewer and stores the structured report.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectSnapshotInput"
+      responses:
+        "201":
+          description: Completed project analysis
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Analysis"
+        "502":
+          description: AI provider failure
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /analyses/{id}:
+    get:
+      operationId: getAnalysis
+      tags: [analyses]
+      summary: Get a project analysis
+      description: Returns a full analysis report with prioritized findings.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Project analysis
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Analysis"
+        "404":
+          description: Analysis not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +114,192 @@ components:
           type: string
       required:
         - status
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+    ProjectSnapshotInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string
+          minLength: 1
+        techStack:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        currentState:
+          type: string
+          minLength: 1
+        goals:
+          type: array
+          items:
+            type: string
+        codeContext:
+          type: string
+          description: Optional source excerpts or architecture notes for deeper analysis.
+      required:
+        - name
+        - description
+        - techStack
+        - currentState
+    Finding:
+      type: object
+      properties:
+        id:
+          type: integer
+        severity:
+          type: string
+          enum: [critical, high, medium, low]
+        category:
+          type: string
+        title:
+          type: string
+        summary:
+          type: string
+        evidence:
+          type: string
+        recommendation:
+          type: string
+        effort:
+          type: string
+          enum: [quick-win, focused, involved]
+        status:
+          type: string
+          enum: [open, accepted, resolved]
+        fileRef:
+          type: ["string", "null"]
+      required:
+        - id
+        - severity
+        - category
+        - title
+        - summary
+        - evidence
+        - recommendation
+        - effort
+        - status
+        - fileRef
+    CategoryScore:
+      type: object
+      properties:
+        category:
+          type: string
+        score:
+          type: integer
+        note:
+          type: string
+      required:
+        - category
+        - score
+        - note
+    AnalysisListItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        status:
+          type: string
+          enum: [completed, running, failed]
+        score:
+          type: integer
+        grade:
+          type: string
+        createdAt:
+          type: string
+        criticalCount:
+          type: integer
+        highCount:
+          type: integer
+      required:
+        - id
+        - name
+        - status
+        - score
+        - grade
+        - createdAt
+        - criticalCount
+        - highCount
+    Analysis:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        techStack:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum: [completed, running, failed]
+        score:
+          type: integer
+        grade:
+          type: string
+        createdAt:
+          type: string
+        executiveSummary:
+          type: string
+        recommendation:
+          type: string
+        strengths:
+          type: array
+          items:
+            type: string
+        categoryScores:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryScore"
+        findings:
+          type: array
+          items:
+            $ref: "#/components/schemas/Finding"
+      required:
+        - id
+        - name
+        - description
+        - techStack
+        - status
+        - score
+        - grade
+        - createdAt
+        - executiveSummary
+        - recommendation
+        - strengths
+        - categoryScores
+        - findings
+    DashboardSummary:
+      type: object
+      properties:
+        totalAnalyses:
+          type: integer
+        averageScore:
+          type: integer
+        openFindings:
+          type: integer
+        criticalIssues:
+          type: integer
+        recentAnalyses:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnalysisListItem"
+      required:
+        - totalAnalyses
+        - averageScore
+        - openFindings
+        - criticalIssues
+        - recentAnalyses
 

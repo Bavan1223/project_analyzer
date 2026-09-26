@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Project Auditor"
+description = "An AI-powered engineering review workspace that analyzes a codebase, scores its production readiness, and turns findings into prioritized, evidence-backed actions for builders."
+version = "1.0.0"
+id = "artifacts/project-auditor"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19928
+
+[services.development]
+run = "pnpm --filter @workspace/project-auditor run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/project-auditor", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/project-auditor/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19928"
+BASE_PATH = "/"
