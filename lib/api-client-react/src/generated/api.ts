@@ -25,6 +25,7 @@ import type {
   DashboardSummary,
   ErrorResponse,
   HealthStatus,
+  ProjectArchiveUpload,
   ProjectSnapshotInput
 } from './api.schemas';
 
@@ -376,6 +377,94 @@ export const useCreateAnalysis = <TError = ErrorType<ErrorResponse>,
         TContext
       > => {
       return useMutation(getCreateAnalysisMutationOptions(options));
+    }
+
+export const getUploadProjectForAnalysisUrl = () => {
+
+
+
+
+  return `/api/analyses/upload`
+}
+
+/**
+ * Accepts a project description and ZIP archive, inspects the archive, and stores an evidence-backed AI report.
+ * @summary Analyze a project archive
+ */
+export const uploadProjectForAnalysis = async (projectArchiveUpload: ProjectArchiveUpload, options?: Parameters<typeof customFetch>[1]): Promise<Analysis> => {
+    const formData = new FormData();
+formData.append(`projectName`, projectArchiveUpload.projectName);
+formData.append(`description`, projectArchiveUpload.description);
+if(projectArchiveUpload.techStack !== undefined) {
+ formData.append(`techStack`, projectArchiveUpload.techStack);
+ }
+if(projectArchiveUpload.currentState !== undefined) {
+ formData.append(`currentState`, projectArchiveUpload.currentState);
+ }
+if(projectArchiveUpload.goals !== undefined) {
+ formData.append(`goals`, projectArchiveUpload.goals);
+ }
+formData.append(`projectZip`, projectArchiveUpload.projectZip);
+
+  return customFetch<Analysis>(getUploadProjectForAnalysisUrl(),
+  {
+    ...options,
+    method: 'POST'
+    ,
+    body: formData
+  }
+);}
+
+
+
+
+
+export const getUploadProjectForAnalysisMutationKey = () => ['uploadProjectForAnalysis'] as const;
+
+export const getUploadProjectForAnalysisMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uploadProjectForAnalysis>>, TError,UploadProjectForAnalysisMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof uploadProjectForAnalysis>>, TError,UploadProjectForAnalysisMutationVariables, TContext> => {
+
+const mutationKey = getUploadProjectForAnalysisMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof uploadProjectForAnalysis>>, UploadProjectForAnalysisMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  uploadProjectForAnalysis(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UploadProjectForAnalysisMutationResult = NonNullable<Awaited<ReturnType<typeof uploadProjectForAnalysis>>>
+    export type UploadProjectForAnalysisMutationBody = BodyType<ProjectArchiveUpload>
+    export type UploadProjectForAnalysisMutationError = ErrorType<ErrorResponse>
+    export type UploadProjectForAnalysisMutationVariables = {data: BodyType<ProjectArchiveUpload>}
+
+    /**
+ * @summary Analyze a project archive
+ */
+export const useUploadProjectForAnalysis = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uploadProjectForAnalysis>>, TError,UploadProjectForAnalysisMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof uploadProjectForAnalysis>>,
+        TError,
+        UploadProjectForAnalysisMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUploadProjectForAnalysisMutationOptions(options));
     }
 
 export const getGetAnalysisUrl = (id: number,) => {

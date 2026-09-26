@@ -18,4 +18,5 @@ export * from './findingEffort';
 export * from './findingSeverity';
 export * from './findingStatus';
 export * from './healthStatus';
+export * from './projectArchiveUpload';
 export * from './projectSnapshotInput';

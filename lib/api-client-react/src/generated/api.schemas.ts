@@ -27,6 +27,19 @@ export interface ProjectSnapshotInput {
   codeContext?: string;
 }
 
+export interface ProjectArchiveUpload {
+  /** @minLength 1 */
+  projectName: string;
+  /** @minLength 1 */
+  description: string;
+  /** Optional comma-separated technology list. */
+  techStack?: string;
+  currentState?: string;
+  /** Optional newline-separated review goals. */
+  goals?: string;
+  projectZip: Blob;
+}
+
 export type FindingSeverity = typeof FindingSeverity[keyof typeof FindingSeverity];
 
 

@@ -80,6 +80,37 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /analyses/upload:
+    post:
+      operationId: uploadProjectForAnalysis
+      tags: [analyses]
+      summary: Analyze a project archive
+      description: Accepts a project description and ZIP archive, inspects the archive, and stores an evidence-backed AI report.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/ProjectArchiveUpload"
+      responses:
+        "201":
+          description: Completed project analysis
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Analysis"
+        "400":
+          description: Invalid upload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "502":
+          description: AI provider failure
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /analyses/{id}:
     get:
       operationId: getAnalysis
@@ -150,6 +181,30 @@ components:
         - description
         - techStack
         - currentState
+    ProjectArchiveUpload:
+      type: object
+      properties:
+        projectName:
+          type: string
+          minLength: 1
+        description:
+          type: string
+          minLength: 1
+        techStack:
+          type: string
+          description: Optional comma-separated technology list.
+        currentState:
+          type: string
+        goals:
+          type: string
+          description: Optional newline-separated review goals.
+        projectZip:
+          type: string
+          format: binary
+      required:
+        - projectName
+        - description
+        - projectZip
     Finding:
       type: object
       properties:

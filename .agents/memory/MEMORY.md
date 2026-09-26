@@ -1,0 +1,1 @@
+- [AI provider constraints](ai-provider-constraints.md) — model availability and project-level access can differ from the provider catalog; keep model selection configurable.

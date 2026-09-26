@@ -108,6 +108,55 @@ export const CreateAnalysisResponse = zod.object({
 
 
 /**
+ * Accepts a project description and ZIP archive, inspects the archive, and stores an evidence-backed AI report.
+ * @summary Analyze a project archive
+ */
+
+
+
+
+export const UploadProjectForAnalysisBody = zod.object({
+  "projectName": zod.string().min(1),
+  "description": zod.string().min(1),
+  "techStack": zod.string().optional().describe('Optional comma-separated technology list.'),
+  "currentState": zod.string().optional(),
+  "goals": zod.string().optional().describe('Optional newline-separated review goals.'),
+  "projectZip": zod.instanceof(Blob)
+})
+
+export const UploadProjectForAnalysisResponse = zod.object({
+  "id": zod.number().int(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "techStack": zod.array(zod.string()),
+  "status": zod.enum(['completed', 'running', 'failed']),
+  "score": zod.number().int(),
+  "grade": zod.string(),
+  "createdAt": zod.string(),
+  "executiveSummary": zod.string(),
+  "recommendation": zod.string(),
+  "strengths": zod.array(zod.string()),
+  "categoryScores": zod.array(zod.object({
+  "category": zod.string(),
+  "score": zod.number().int(),
+  "note": zod.string()
+})),
+  "findings": zod.array(zod.object({
+  "id": zod.number().int(),
+  "severity": zod.enum(['critical', 'high', 'medium', 'low']),
+  "category": zod.string(),
+  "title": zod.string(),
+  "summary": zod.string(),
+  "evidence": zod.string(),
+  "recommendation": zod.string(),
+  "effort": zod.enum(['quick-win', 'focused', 'involved']),
+  "status": zod.enum(['open', 'accepted', 'resolved']),
+  "fileRef": zod.string().nullable()
+}))
+})
+
+
+/**
  * Returns a full analysis report with prioritized findings.
  * @summary Get a project analysis
  */
